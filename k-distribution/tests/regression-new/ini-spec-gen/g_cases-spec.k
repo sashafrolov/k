@@ -1,0 +1,19 @@
+// Copyright (c) 2019 K Team. All Rights Reserved.
+
+module G_CASES-SPEC
+  imports INI-SPEC-GEN
+
+    // g-case-1
+    rule <k> foo(X:Int) => z </k>
+         <fooC> Y:Int </fooC>
+         <alt> left </alt>
+      requires X <=Int 8
+
+    // g-case-2
+    rule <k> foo(X:Int) => z </k>
+         <fooC> Y:Int </fooC>
+         <alt> left </alt>
+      requires X >Int 8
+
+
+endmodule
