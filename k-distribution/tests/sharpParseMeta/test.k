@@ -19,10 +19,6 @@ module TEST
   imports ID-SYNTAX
   
   syntax String ::= token2String ( K )    [function, functional, hook(STRING.token2string)]
-  syntax Input
-  syntax Stdout
-  syntax Stderr
-  syntax MetaK ::= parseError(Input, Stdout, Stderr)
 
   configuration <k> $PGM:Any </k>
 
@@ -44,11 +40,24 @@ module TEST
   // collect productions from anywhere in the AST and put them in a List
   syntax KItem ::= eP(K, K, List) // extractProduction
   syntax KItem ::= prods(K, List) // productions collector
-  rule eP(`#KApply`(Tk, Kl),     Srt, L) => eP(Kl, Srt, L) [owise] // generic descent
+  //rule eP(`#KApply`(Tk, Kl),     Srt, L) => eP(Kl, Srt, L) [owise] // generic descent
   rule eP(`#KList`(T1, T2),      Srt, L) => eP(T1, Srt, L) ~> T2 // generically visiting every child
   rule eP(`#EmptyKList`(.KList), Srt, L) => prods(Srt, L)
   rule eP(`#KToken`(_, _),       Srt, L) => prods(Srt, L)
   rule prods(Srt, L) ~> T:KItem          => eP(T, Srt, L)
+  
+  // TODO: adding these instead of one `owise` rule because it doesn't work :(
+  rule eP(`#KApply`(#token("kDefinition","MetaKLabel"), Kl), Srt, L) => eP(Kl, Srt, L)
+  rule eP(`#KApply`(#token("emptyKRequireList","MetaKLabel"), Kl), Srt, L) => eP(Kl, Srt, L)
+  rule eP(`#KApply`(#token("kModuleList","MetaKLabel"), Kl), Srt, L) => eP(Kl, Srt, L)
+  rule eP(`#KApply`(#token("kModule","MetaKLabel"), Kl), Srt, L) => eP(Kl, Srt, L)
+  rule eP(`#KApply`(#token("emptyKModuleList","MetaKLabel"), Kl), Srt, L) => eP(Kl, Srt, L)
+  rule eP(`#KApply`(#token("noKAttributesDeclaration","MetaKLabel"), Kl), Srt, L) => eP(Kl, Srt, L)
+  rule eP(`#KApply`(#token("emptyKImportList","MetaKLabel"), Kl), Srt, L) => eP(Kl, Srt, L)
+  rule eP(`#KApply`(#token("kSentenceList","MetaKLabel"), Kl), Srt, L) => eP(Kl, Srt, L)
+  rule eP(`#KApply`(#token("emptyKSentenceList","MetaKLabel"), Kl), Srt, L) => eP(Kl, Srt, L)
+  rule eP(`#KApply`(#token("prodBlock","MetaKLabel"), Kl), Srt, L) => eP(Kl, Srt, L)
+  rule eP(`#KApply`(#token("prioritySeqBlock","MetaKLabel"), Kl), Srt, L) => eP(Kl, Srt, L)
 
   rule eP(`#KApply`(#token("kSyntaxProduction","MetaKLabel"), `#KList`(Srt, Kl)), S, L) => eP(Kl, Srt, L)
   rule eP(`#KApply`(#token("kProductionWAttr", "MetaKLabel"), Kl), Srt, L) =>
@@ -91,7 +100,7 @@ module TEST
   rule pp(.K, S) ~> .List
     => #open("tempPrettyPrint.k", "w") ~> S
   rule Fd:Int ~> S:String
-    => #write(Fd, S) ~> #close(Fd) ~> #parseString("k-light2k5.sh --output meta-kast tempPrettyPrint.k Pgm", "int a; a = 1;")
+    => #write(Fd, S) ~> #close(Fd) ~> #parseString("k-light2k5.sh --output meta-kast tempPrettyPrint.k E", #token("1", "Input"))
 
 endmodule
 
