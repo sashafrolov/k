@@ -17,15 +17,26 @@ module TEST
   imports K-IO
   imports LIST
   imports ID-SYNTAX
+  imports DOMAINS
+  imports META
   
   syntax String ::= token2String ( K )    [function, functional, hook(STRING.token2string)]
 
   configuration <k> $PGM:Any </k>
 
   // take the input given as argument and run outer parsing to get the syntax AST
-  rule S:Any => eP(#parseString("k-light2k5.sh --output meta-kast outer-k.k KDefinition", S), .K, .List)
-  // use the list of productions to parse a string
-  //rule <k> prods(_, L) => #parseWithProds(L, "Pgm", "int a; a = 1;") </k>
+  // rule S:Any => eP(#parseString("k-light2k5.sh --output meta-kast outer-k.k KDefinition", S), .K, .List)
+  rule S:Any => outerParse(S)
+  
+  syntax KItem ::= outerParse(K)
+  rule outerParse(S) => externalParse("k-light2k5.sh --output meta-kast outer-k.k KDefinition tempToParse.k", S)
+  syntax KItem ::= externalParse(String, K)
+  rule externalParse(Path, S)
+    => #open("tempToParse.k", "w") ~> externalParse(Path, S)
+  rule Fd:Int ~> externalParse(Path, S)
+    => #write(Fd, token2String(S)) ~> #close(Fd) ~> #system(Path) ~> externalParse(Path, S)
+  rule #systemResult(0, Stdout, _) ~> externalParse(Path, S) => #parseKore(Stdout) ~> externalParse(Path, S)
+  rule Term:MetaK ~> externalParse(Path, S) => eP(Term, .K, .List)
 
   // meta AST declarations
   syntax MetaKLabel
@@ -103,4 +114,5 @@ module TEST
     => #write(Fd, S) ~> #close(Fd) ~> #parseString("k-light2k5.sh --output meta-kast tempPrettyPrint.k E", #token("1", "Input"))
 
 endmodule
+
 
