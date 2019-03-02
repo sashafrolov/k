@@ -69,7 +69,7 @@ public class PrintOptions {
     public String outputFile;
 
     @Parameter(names={"--output", "-o"}, converter=OutputModeConverter.class,
-            description="How to display krun results. <mode> is either [pretty|program|kast|binary|json|latex|none].")
+            description="How to display krun results. <mode> is either [program|kore|pretty|kast|binary|json|latex|none].")
     public OutputModes output = OutputModes.PRETTY;
 
     public static class OutputModeConverter extends BaseEnumConverter<OutputModes> {

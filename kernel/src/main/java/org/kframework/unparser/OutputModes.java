@@ -7,12 +7,13 @@ package org.kframework.unparser;
  *
  */
 public enum OutputModes {
-    PRETTY, PROGRAM, KAST, BINARY, JSON, LATEX, NONE;
+    PROGRAM, KORE, PRETTY, KAST, BINARY, JSON, LATEX, NONE;
 
     private String extension;
     static {
-        PRETTY.extension  = "kpretty";
         PROGRAM.extension = "pgm";
+        KORE.extension    = "kore";
+        PRETTY.extension  = "kpretty";
         KAST.extension    = "kast";
         BINARY.extension  = "kbin";
         JSON.extension    = "json";
