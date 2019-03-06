@@ -12,38 +12,39 @@ module TEST-SYNTAX
   syntax Any ::= r"([\\n\\r]|.)*" [token]
 endmodule
 
-module TEST
-  imports COMMONS
+module FILE-UTIL
+  imports K-IO
+  imports DOMAINS
+  syntax KItem ::= nextWriteToFile(String)
+                 | nextCloseFile(Int)
+  syntax KItem ::= saveToFile(String /* path */, String /* contents */)
+  rule saveToFile(Path, S)
+    => #open(Path, "w") ~> nextWriteToFile(S)
+  rule Fd:Int ~> nextWriteToFile(S)
+    => #write(Fd, S) ~> nextCloseFile(Fd)
+  rule nextCloseFile(Fd)
+    => #close(Fd)
+endmodule
+
+module EXTERNAL-PARSE
   imports K-IO
   imports LIST
-  imports ID-SYNTAX
   imports DOMAINS
   imports META
-  
-  syntax String ::= token2String ( K )    [function, functional, hook(STRING.token2string)]
-
-  configuration <k> $PGM:Any </k>
-
-  // take the input given as argument and run outer parsing to get the syntax AST
-  // rule S:Any => eP(#parseString("k-light2k5.sh --output meta-kast outer-k.k KDefinition", S), .K, .List)
-  rule S:Any => outerParse(S)
-  
-  syntax KItem ::= outerParse(K)
-  syntax KItem ::= nextWriteToFile(K, K)
-                 | nextCloseFile(K, K)
+  imports FILE-UTIL
+  // call externalParse with a command line argument to a tool that returns KAST
+  syntax KItem ::= externalParse(String, String)
+                 | parseResult(K)
+  syntax KItem ::= nextExecute ( K )
                  | "nextParseKore"
-                 | "nextExtractProds"
-  rule outerParse(S) => externalParse("k-light2k5.sh --output meta-kast outer-k.k KDefinition tempToParse.k", S)
-  syntax KItem ::= externalParse(String, K)
+                 | "nextParseResult"
   rule externalParse(Path, S)
-    => #open("tempToParse.k", "w") ~> nextWriteToFile(Path, S)
-  rule Fd:Int ~> nextWriteToFile(Path, S)
-    => #write(Fd, token2String(S)) ~> nextCloseFile(Path, Fd)
-  rule nextCloseFile(Path, Fd)
-    => #close(Fd) ~> #system(Path) ~> nextParseKore
-  rule #systemResult(0, Stdout, _) ~> nextParseKore => #parseKore(Stdout) ~> nextExtractProds
-  rule Term:MetaK ~> nextExtractProds => eP(Term, .K, .List)
-
+    => saveToFile("tempToParse.k", S) ~> nextExecute(Path)
+  rule nextExecute(Path)
+    => #system(Path +String " tempToParse.k") ~> nextParseKore
+  rule #systemResult(0, Stdout, _) ~> nextParseKore => #parseKore(Stdout) ~> nextParseResult
+  rule Term:MetaK ~> nextParseResult => parseResult(Term)
+  
   // meta AST declarations
   syntax MetaKLabel
   syntax MetaValue
@@ -53,6 +54,26 @@ module TEST
                  | metaKToken (K, K)
                  | metaKList  (K, K)
                  | metaEmptyKList (K)
+endmodule
+
+module TEST
+  imports COMMONS
+  imports K-IO
+  imports LIST
+  imports ID-SYNTAX
+  imports DOMAINS
+  imports META
+  imports EXTERNAL-PARSE
+
+  configuration <k> $PGM:Any </k>
+
+  // take the input given as argument and run outer parsing to get the syntax AST
+  syntax String ::= token2String ( K )    [function, functional, hook(STRING.token2string)] // TODO: move this in domains.k somewhere
+  rule S:Any => outerParse(token2String(S)) ~> eP(.K, .K, .List)
+
+  syntax KItem ::= outerParse(K)
+  rule outerParse(S) => externalParse("k-light2k5.sh --output meta-kast outer-k.k KDefinition", S)
+  rule parseResult(Term) ~> eP(.K, .K, .List) => eP(Term, .K, .List)
 
   // collect productions from anywhere in the AST and put them in a List
   syntax KItem ::= eP(K, K, List) // extractProduction
@@ -63,7 +84,7 @@ module TEST
   rule eP(metaKToken(_, _),       Srt, L) => prods(Srt, L)
   rule prods(Srt, L) ~> T:KItem          => eP(T, Srt, L)
   
-  // TODO: adding these instead of one `owise` rule because it doesn't work :(
+  // TODO: adding these instead of one `owise` rule because it doesn't work in the java-backend :(
   rule eP(metaKApply(#token("kDefinition","MetaKLabel"), Kl), Srt, L) => eP(Kl, Srt, L)
   rule eP(metaKApply(#token("emptyKRequireList","MetaKLabel"), Kl), Srt, L) => eP(Kl, Srt, L)
   rule eP(metaKApply(#token("kModuleList","MetaKLabel"), Kl), Srt, L) => eP(Kl, Srt, L)
@@ -115,9 +136,7 @@ module TEST
 
   // pretty printing finished, time to write to file
   rule pp(.K, S) ~> .List
-    => #open("tempPrettyPrint.k", "w") ~> S
-  rule Fd:Int ~> S:String
-    => #write(Fd, S) ~> #close(Fd) ~> #parseString("k-light2k5.sh --output meta-kast tempPrettyPrint.k E", #token("1", "Input"))
+    => saveToFile("tempPrettyPrint.k", S) ~> externalParse("k-light2k5.sh --output meta-kast tempPrettyPrint.k E", "1+2")
 
 endmodule
 
