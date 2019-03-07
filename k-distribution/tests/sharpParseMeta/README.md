@@ -22,6 +22,11 @@ Implement `#parse` using more basic operations like `#write` which writes a Stri
 `#system` which calls an external command line and returns a term `#systemResult(<exit-code>, <stdout>, <stderr>)`.
 After that `#parseKore` ca be called on `<stdout>` to create a term.
 
+The user will be exposed to the same functionality:
+`parseWithProds (listOfProductions:List, startSymbol:String, input:String) -> KAST`
+which takes the list of productions and pretty prints them to a format accepted by the external parser.
+Then saves it to a file and calls the external parser for that grammar file, start symbol and input.
+
 The implementation can be found in the `java-backend:org.kframework.backend.java.builtins.BuiltinIOOperations`
 and `/include/ocaml/hooks.ml` for ocaml.
 

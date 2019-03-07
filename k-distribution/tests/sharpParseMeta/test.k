@@ -3,7 +3,6 @@
 
 module COMMONS
   syntax Any
-
 endmodule
 
 module TEST-SYNTAX
@@ -15,14 +14,16 @@ endmodule
 module FILE-UTIL
   imports K-IO
   imports DOMAINS
-  syntax KItem ::= nextWriteToFile(String)
-                 | nextCloseFile(Int)
-  syntax KItem ::= saveToFile(String /* path */, String /* contents */)
+  // saveToFile(path:String, contents:String) -> .K
+  syntax KItem ::= saveToFile(String, String)
+
+  syntax KItem ::= callWriteToFile(String)
+                 | callCloseFile(Int)
   rule saveToFile(Path, S)
-    => #open(Path, "w") ~> nextWriteToFile(S)
-  rule Fd:Int ~> nextWriteToFile(S)
-    => #write(Fd, S) ~> nextCloseFile(Fd)
-  rule nextCloseFile(Fd)
+    => #open(Path, "w") ~> callWriteToFile(S)
+  rule Fd:Int ~> callWriteToFile(S)
+    => #write(Fd, S) ~> callCloseFile(Fd)
+  rule callCloseFile(Fd)
     => #close(Fd)
 endmodule
 
@@ -32,18 +33,18 @@ module EXTERNAL-PARSE
   imports DOMAINS
   imports META
   imports FILE-UTIL
-  // call externalParse with a command line argument to a tool that returns KAST
+  // externalParse(cmd:String, input:String) -> KAST
   syntax KItem ::= externalParse(String, String)
                  | parseResult(K)
-  syntax KItem ::= nextExecute ( K )
-                 | "nextParseKore"
-                 | "nextParseResult"
+  syntax KItem ::= callSystem ( K )
+                 | "callParseKore"
+                 | "callParseResult"
   rule externalParse(Path, S)
-    => saveToFile("tempToParse.k", S) ~> nextExecute(Path)
-  rule nextExecute(Path)
-    => #system(Path +String " tempToParse.k") ~> nextParseKore
-  rule #systemResult(0, Stdout, _) ~> nextParseKore => #parseKore(Stdout) ~> nextParseResult
-  rule Term:MetaK ~> nextParseResult => parseResult(Term)
+    => saveToFile("tempToParse.k", S) ~> callSystem(Path)
+  rule callSystem(Path)
+    => #system(Path +String " tempToParse.k") ~> callParseKore
+  rule #systemResult(0, Stdout, _) ~> callParseKore => #parseKore(Stdout) ~> callParseResult
+  rule Term:KItem ~> callParseResult => parseResult(Term)
   
   // meta AST declarations
   syntax MetaKLabel
@@ -56,6 +57,52 @@ module EXTERNAL-PARSE
                  | metaEmptyKList (K)
 endmodule
 
+module SHARP-PARSE
+  imports EXTERNAL-PARSE
+  
+  // parseWithProds (listOfProductions:List, startSymbol:String, input:String) -> KAST
+  syntax KItem ::= parseWithProds(List, String, String)
+
+  syntax String ::= token2String ( K )    [function, functional, hook(STRING.token2string)] // TODO: move this in domains.k somewhere
+
+  // generate grammar
+  syntax K ::= pp(K, String) // pretty print
+  rule parseWithProds(L, Start, Input) => pp(.K, "module TEMPPRETTYPRINT\n") ~> L ListItem("endmodule\n") ~> Start ~> Input
+  rule pp(.K, S) ~> ListItem(T) L => pp(T, S) ~> L
+  rule pp(metaKList(T1, T2), S) ~> L:List => pp(T1, S) ~> ListItem(T2) L // generically visiting every child
+  rule pp(`metaEmptyKList`(.KList), S) => pp(.K, S)
+  rule pp(T:String, S) => pp(.K, S +String T) // closing matching element (for ] or endmodule)
+  rule pp(metaKApply(
+            #token("kSyntaxProduction", "MetaKLabel"),
+           metaKList(metaKToken(Srt, #token("KSort","MetaKSort")), metaKApply(#token("kProductionWAttr",  "MetaKLabel"), Kl))), S) 
+    => pp(Kl, S +String "  " +String "syntax " +String token2String(Srt) +String " ::= ")
+  rule pp(metaKApply(#token("regexTerminal","MetaKLabel"),metaKList(metaKToken(Tk, #token("KString","MetaKSort")),`metaEmptyKList`(.KList))), S)
+    => pp(.K, S +String "r" +String token2String(Tk) +String " ")
+  rule pp(metaKApply(#token("kAttributesDeclaration","MetaKLabel"), Kl), S) ~> L
+    => pp(Kl, S +String "[") ~> ListItem("dummy]\n") L
+  rule pp(metaKApply(#token("kAttributesList","MetaKLabel"), Kl), S)
+    => pp(Kl, S)
+  rule pp(metaKApply(#token("tagSimple","MetaKLabel"),metaKList(metaKToken(Tk,#token("KEY","MetaKSort")),`metaEmptyKList`(.KList))), S)
+    => pp(.K, S +String token2String(Tk) +String ", ")
+  rule pp(metaKApply(#token("tagContent","MetaKLabel"),
+           metaKList(
+            metaKToken(Key, #token("KEY","MetaKSort")),
+            metaKList(metaKToken(Vl, #token("TAGList","MetaKSort")),`metaEmptyKList`(.KList)))), S)
+    => pp(.K, S +String token2String(Key) +String "(" +String token2String(Vl) +String ")" +String ", ")
+  rule pp(metaKApply(#token("nonTerminal","MetaKLabel"),metaKList(metaKToken(Tk,#token("KSort","MetaKSort")),`metaEmptyKList`(.KList))), S)
+    => pp(.K, S +String token2String(Tk) +String " ")
+  rule pp(metaKApply(#token("terminal","MetaKLabel"),metaKList(metaKToken(Tk, #token("KString","MetaKSort")),`metaEmptyKList`(.KList))), S)
+    => pp(.K, S +String token2String(Tk) +String " ")
+  rule pp(metaKApply(#token("kProduction","MetaKLabel"), Kl), S)
+    => pp(Kl, S)
+  rule pp(metaKApply(#token("noKAttributesDeclaration","MetaKLabel"),`metaEmptyKList`(.KList)), S)
+    => pp(.K, S +String "\n")
+  // pretty printing finished, time to write to file
+  rule pp(.K, S) ~> .List ~> Start:String ~> Input:String
+    => saveToFile("tempPrettyPrint.k", S) ~> externalParse("k-light2k5.sh --output meta-kast tempPrettyPrint.k " +String Start, Input)
+
+endmodule
+
 module TEST
   imports COMMONS
   imports K-IO
@@ -64,11 +111,11 @@ module TEST
   imports DOMAINS
   imports META
   imports EXTERNAL-PARSE
+  imports SHARP-PARSE
 
   configuration <k> $PGM:Any </k>
 
   // take the input given as argument and run outer parsing to get the syntax AST
-  syntax String ::= token2String ( K )    [function, functional, hook(STRING.token2string)] // TODO: move this in domains.k somewhere
   rule S:Any => outerParse(token2String(S)) ~> eP(.K, .K, .List)
 
   syntax KItem ::= outerParse(K)
@@ -101,42 +148,7 @@ module TEST
   rule eP(metaKApply(#token("kProductionWAttr", "MetaKLabel"), Kl), Srt, L) =>
        prods(Srt, L ListItem(metaKApply(#token("kSyntaxProduction", "MetaKLabel"), metaKList(Srt, metaKApply(#token("kProductionWAttr",  "MetaKLabel"), Kl)))))
 
-  // generate grammar
-  syntax K ::= pp(K, String) // pretty print
-  rule <k> prods(_, L) => pp(.K, "module TEMPPRETTYPRINT\n") ~> L ListItem("endmodule\n") </k>
-  rule pp(.K, S) ~> ListItem(T) L => pp(T, S) ~> L
-  rule pp(metaKList(T1, T2), S) ~> L:List => pp(T1, S) ~> ListItem(T2) L // generically visiting every child
-  rule pp(`metaEmptyKList`(.KList), S) => pp(.K, S)
-  rule pp(T:String, S) => pp(.K, S +String T) // closing matching element (for ] or endmodule)
-  rule pp(metaKApply(
-            #token("kSyntaxProduction", "MetaKLabel"),
-           metaKList(metaKToken(Srt, #token("KSort","MetaKSort")), metaKApply(#token("kProductionWAttr",  "MetaKLabel"), Kl))), S) 
-    => pp(Kl, S +String "  " +String "syntax " +String token2String(Srt) +String " ::= ")
-  rule pp(metaKApply(#token("regexTerminal","MetaKLabel"),metaKList(metaKToken(Tk, #token("KString","MetaKSort")),`metaEmptyKList`(.KList))), S)
-    => pp(.K, S +String "r" +String token2String(Tk) +String " ")
-  rule pp(metaKApply(#token("kAttributesDeclaration","MetaKLabel"), Kl), S) ~> L
-    => pp(Kl, S +String "[") ~> ListItem("dummy]\n") L
-  rule pp(metaKApply(#token("kAttributesList","MetaKLabel"), Kl), S)
-    => pp(Kl, S)
-  rule pp(metaKApply(#token("tagSimple","MetaKLabel"),metaKList(metaKToken(Tk,#token("KEY","MetaKSort")),`metaEmptyKList`(.KList))), S)
-    => pp(.K, S +String token2String(Tk) +String ", ")
-  rule pp(metaKApply(#token("tagContent","MetaKLabel"),
-           metaKList(
-            metaKToken(Key, #token("KEY","MetaKSort")),
-            metaKList(metaKToken(Vl, #token("TAGList","MetaKSort")),`metaEmptyKList`(.KList)))), S)
-    => pp(.K, S +String token2String(Key) +String "(" +String token2String(Vl) +String ")" +String ", ")
-  rule pp(metaKApply(#token("nonTerminal","MetaKLabel"),metaKList(metaKToken(Tk,#token("KSort","MetaKSort")),`metaEmptyKList`(.KList))), S)
-    => pp(.K, S +String token2String(Tk) +String " ")
-  rule pp(metaKApply(#token("terminal","MetaKLabel"),metaKList(metaKToken(Tk, #token("KString","MetaKSort")),`metaEmptyKList`(.KList))), S)
-    => pp(.K, S +String token2String(Tk) +String " ")
-  rule pp(metaKApply(#token("kProduction","MetaKLabel"), Kl), S)
-    => pp(Kl, S)
-  rule pp(metaKApply(#token("noKAttributesDeclaration","MetaKLabel"),`metaEmptyKList`(.KList)), S)
-    => pp(.K, S +String "\n")
-
-  // pretty printing finished, time to write to file
-  rule pp(.K, S) ~> .List
-    => saveToFile("tempPrettyPrint.k", S) ~> externalParse("k-light2k5.sh --output meta-kast tempPrettyPrint.k E", "1+2")
-
+  // parse with the collected productions
+  rule <k> prods(_, L) => parseWithProds(L, "E", "1+2") </k>
 endmodule
 
