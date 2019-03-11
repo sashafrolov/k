@@ -655,8 +655,6 @@ struct
   let hook_stat _ _ _ _ _ = raise Not_implemented
   let hook_lstat _ _ _ _ _ = raise Not_implemented
   let hook_opendir _ _ _ _ _ = raise Not_implemented
-  let hook_parse _ _ _ _ _ = raise Not_implemented
-  let hook_parseInModule _ _ _ _ _ = raise Not_implemented
   let hook_system c _ _ _ _ = match c with
     | [String path] ->
       let ic, oc = Unix.open_process path in
@@ -675,22 +673,6 @@ struct
         | Unix.WSTOPPED n -> n
       in
       [KApply3((parse_klabel "#systemResult(_,_,_)_K-IO"), [Int (Z.of_int exit_code)], [String (Buffer.contents buf_out)], [String (Buffer.contents buf_err)])]
-  let hook_parseWithProds _ _ _ _ _ = raise Not_implemented
-  let hook_parseString c _ _ _ _ = match c with
-    | [String path], [KToken(srt, s)] ->
-      let tmp_stdout = Filename.temp_file "" ".txt" in
-        let tmp_stderr = Filename.temp_file "" ".txt" in
-        let out = Sys.command @@ "cat b.test > " ^ tmp_stdout ^ " 2> " ^ tmp_stderr in
-        let fn = match out with
-          | 0 -> tmp_stdout
-          | _ -> tmp_stderr in
-        let f = open_in fn in
-        let rez = input_line f in
-        close_in f ;
-        [String rez]
-    | _ -> raise Not_implemented
-  (*parse_k*)
-  let hook_parseFile _ _ _ _ _ = raise Not_implemented
   let hook_loadDefinition _ _ _ _ _ = raise Not_implemented
 
 end

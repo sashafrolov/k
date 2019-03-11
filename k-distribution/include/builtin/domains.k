@@ -961,23 +961,7 @@ module K-IO
                  | "#lstat" "(" String ")" [function, hook(IO.lstat), impure]
                  | "#opendir" "(" String ")" [function, hook(IO.opendir), impure]
 
-  syntax Input
-  syntax Stdout
-  syntax Stderr
-  syntax KItem ::= parseError(K, K, K) [klabel(parseError)]
-                 | amb(K, K)           [klabel(amb)]
-                 | bottom(K, K)        [klabel(bottom)]
-  // #parseWithProds ( <list of productions>, <start symbol>, <token to parse> )
-  syntax KItem ::= #parseWithProds ( K , String , K ) [function, hook(IO.parseWithProds), impure]
-  // #parseString ( <external path to parser>, <token to parse>)
-  syntax KItem ::= #parseString ( String , K ) [function, hook(IO.parseString), impure]
-  // #parseString ( <external path to parser>, <filename to parse>)
-  syntax KItem ::= #parseFile   ( String , String ) [function, hook(IO.parseFile),   impure]
   syntax KItem ::= #loadDefinition   ( String , K ) [function, hook(IO.loadDefinition),   impure]
-  syntax KItem ::= #parseInModule(String, // input
-                                  String, // start symbol
-                                  String) // module name
-                                  [function, hook(IO.parseInModule), impure]
 
   rule #open(S:String) => #open(S:String, "r+")
 
