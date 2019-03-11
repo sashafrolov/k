@@ -37,13 +37,13 @@ module EXTERNAL-PARSE
   syntax KItem ::= externalParse(String, String)
                  | parseResult(K)
   syntax KItem ::= callSystem ( K )
-                 | "callParseKore"
+                 | "callParseAST"
                  | "callParseResult"
   rule externalParse(Path, S)
     => saveToFile("tempToParse.k", S) ~> callSystem(Path)
   rule callSystem(Path)
-    => #system(Path +String " tempToParse.k") ~> callParseKore
-  rule #systemResult(0, Stdout, _) ~> callParseKore => #parseKore(Stdout) ~> callParseResult
+    => #system(Path +String " tempToParse.k") ~> callParseAST
+  rule #systemResult(0, Stdout, _) ~> callParseAST => #parseAST(Stdout) ~> callParseResult
   rule Term:KItem ~> callParseResult => parseResult(Term)
   
   // meta AST declarations
