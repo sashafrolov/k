@@ -37,14 +37,19 @@ module EXTERNAL-PARSE
   syntax KItem ::= externalParse(String, String)
                  | parseResult(K)
   syntax KItem ::= callSystem ( K )
+                 | makeTempFile (String, String)
                  | "callParseAST"
                  | "callParseResult"
+                 | deleteTempFile(String)
   rule externalParse(Path, S)
-    => saveToFile("tempToParse.k", S) ~> callSystem(Path)
+    => #tempFilename("", ".k") ~> makeTempFile(Path, S)
+  rule Fname:String ~> makeTempFile(Path, S)
+    => saveToFile(Fname, S) ~> callSystem(Path +String " " +String Fname) ~> deleteTempFile(Fname)
   rule callSystem(Path)
-    => #system(Path +String " tempToParse.k") ~> callParseAST
+    => #system(Path) ~> callParseAST
   rule #systemResult(0, Stdout, _) ~> callParseAST => #parseAST(Stdout) ~> callParseResult
   rule Term:KItem ~> callParseResult => parseResult(Term)
+  rule parseResult(Term) ~> deleteTempFile(Fname) => #remove(Fname) ~> parseResult(Term)
   
   // meta AST declarations
   syntax MetaKLabel
@@ -98,8 +103,13 @@ module SHARP-PARSE
   rule pp(metaKApply(#token("noKAttributesDeclaration","MetaKLabel"),`metaEmptyKList`(.KList)), S)
     => pp(.K, S +String "\n")
   // pretty printing finished, time to write to file
+  syntax KItem ::= callParse(String, String, String)
   rule pp(.K, S) ~> .List ~> Start:String ~> Input:String
-    => saveToFile("tempPrettyPrint.k", S) ~> externalParse("k-light2k5.sh --output meta-kast tempPrettyPrint.k " +String Start, Input)
+    => #tempFilename("grm", ".k") ~> callParse(S, Start, Input)
+  rule Fname:String ~> callParse(S, Start, Input)
+    => saveToFile(Fname, S)
+    ~> externalParse("k-light2k5.sh --output meta-kast --module TEMPPRETTYPRINT " +String Fname +String " " +String Start, Input)
+    ~> deleteTempFile(Fname)
 
 endmodule
 
