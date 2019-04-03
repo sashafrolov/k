@@ -862,8 +862,13 @@ endmodule
 
 module META
   imports STRING-SYNTAX
+  imports SORT-K
+
   // Takes as input a string and returns a K term
   syntax KItem ::= #parseAST(String) [function, hook(META.parseAST), impure]
+
+  // Convert #token of any sort to a String token
+  syntax String ::= tokenToString(K) [function, functional, hook(STRING.token2string)]
 endmodule
 
 module K-IO
