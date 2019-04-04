@@ -133,27 +133,27 @@ public class ToLatex {
     }
 
     public static void apply(DataOutputStream out, Sentence sent) throws IOException {
-        if (sent instanceof Rule) {
-            Rule rule = (Rule) sent;
-            writeString(out, "\\outerRule{");
-            apply(out, rule.body());
-            writeString(out, "}{");
-            apply(out, rule.requires());
-            writeString(out, "}{");
-            apply(out, rule.ensures());
-            writeString(out, "}{");
-            apply(out, rule.att());
-            writeString(out, "}");
+        if      (sent instanceof Rule)          apply(out, (Rule)          sent);
+        else if (sent instanceof ModuleComment) apply(out, (ModuleComment) sent);
+        else    throw KEMException.criticalError("Do not know how to serialize sentence to LaTeX: " + sent.toString());
+    }
 
-        } else if (sent instanceof ModuleComment) {
-            ModuleComment moduleComment = (ModuleComment) sent;
-            writeString(out, "\\outerModuleComment{" + moduleComment.comment() + "}{");
-            apply(out, moduleComment.att());
-            writeString(out, "}");
+    public static void apply(DataOutputStream out, Rule rule) throws IOException {
+        writeString(out, "\\outerRule{");
+        apply(out, rule.body());
+        writeString(out, "}{");
+        apply(out, rule.requires());
+        writeString(out, "}{");
+        apply(out, rule.ensures());
+        writeString(out, "}{");
+        apply(out, rule.att());
+        writeString(out, "}");
+    }
 
-        } else {
-            KEMException.criticalError("Do not know how to serialize sentence: " + sent.toString());
-        }
+    public static void apply(DataOutputStream out, ModuleComment moduleComment) throws IOException {
+        writeString(out, "\\outerModuleComment{" + moduleComment.comment() + "}{");
+        apply(out, moduleComment.att());
+        writeString(out, "}");
     }
 
     public static void apply(DataOutputStream out, K k) throws IOException {
