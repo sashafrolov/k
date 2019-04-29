@@ -29,7 +29,7 @@ object Strategy {
                   KORE.KVariable("S", Att.empty.add(classOf[Sort], Sorts.KItem)),
                 )
               ),
-              KORE.KApply(KLabels.DOTS)
+              KORE.KApply(KLabels.NO_DOTS)
             ),
             KORE.KApply(
               KLabels.NOT_EQUALS_K, 
