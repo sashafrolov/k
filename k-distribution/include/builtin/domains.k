@@ -423,16 +423,8 @@ module INT-SYMBOLIC [symbolic, kore]
    * Definability conditions for _/Int_ and _%Int_
    */
 
-  rule
-    #Ceil(@I1:Int /Int @I2:Int)
-  =>
-    {(@I2 =/=Int 0) #Equals true} #And #Ceil(@I1) #And #Ceil(@I2)
-  [anywhere]
-  rule
-    #Ceil(@I1:Int %Int @I2:Int)
-  =>
-    {(@I2 =/=Int 0) #Equals true} #And #Ceil(@I1) #And #Ceil(@I2)
-  [anywhere]
+  rule #Ceil(I1:Int /Int I2:Int) => {(I2 =/=Int 0) #Equals true} [anywhere]
+  rule #Ceil(I1:Int %Int I2:Int) => {(I2 =/=Int 0) #Equals true} [anywhere]
 endmodule
 
 module INT
