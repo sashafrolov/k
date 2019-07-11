@@ -74,23 +74,23 @@ object KLabelOrdering extends Ordering[KLabel] {
   }
 }
 
-trait KToken extends KItem {
+trait KToken extends KItem with org.kframework.Equals[KToken] {
   def sort: Sort
   def s: String
-  override def equals(other: Any) = other match {
-    case other: KToken => sort == other.sort && s == other.s
-    case _ => false
-  }
+
+  override def typedEquals(other : KToken) =
+    sort == other.sort && s == other.s
+
   override def computeHashCode = sort.hashCode() * 13 + s.hashCode
 }
 
-trait Sort extends Ordered[Sort] with HasCachedHashCode {
+trait Sort extends Ordered[Sort] with HasCachedHashCode with org.kframework.Equals[Sort] {
   def name: String
   def params: Seq[Sort]
-  override def equals(other: Any) = other match {
-    case other: Sort => name == other.name && params == other.params
-    case _ => false
-  }
+
+  override def typedEquals(other : Sort) =
+    name == other.name && params == other.params
+
   override def computeHashCode = name.hashCode * 23 + params.hashCode
     
   def compare(that: Sort): Int = {
@@ -99,24 +99,22 @@ trait Sort extends Ordered[Sort] with HasCachedHashCode {
   }
 }
 
-trait KCollection extends HasCachedHashCode {
+trait KCollection extends HasCachedHashCode with org.kframework.Equals[KCollection] {
   def items: java.util.List[K]
   def size: Int
   def asIterable: java.lang.Iterable[_ <: K]
   def stream: java.util.stream.Stream[K] = items.stream()
 
-  override def equals(that: Any): Boolean =
-    hashCode == that.hashCode && (that match {
-      case that: AnyRef if that.asInstanceOf[AnyRef] eq this => true
-      case that: KCollection => this.items == that.items
-      case _ => false
-    })
+  override def equals(other : Any) =
+    hashCode == other.hashCode && super.equals(other)
+
+  override def typedEquals(other : KCollection) =
+    items == other.items
 
   override def computeHashCode = items.hashCode
 }
 
-trait KList extends KCollection {
-}
+trait KList extends KCollection
 
 trait KApply extends KItem with KCollection {
   def klabel: KLabel
