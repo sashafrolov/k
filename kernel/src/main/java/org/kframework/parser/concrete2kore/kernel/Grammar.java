@@ -59,11 +59,13 @@ public class Grammar implements Serializable {
     private BiMap<String, NonTerminal> startNonTerminals = HashBiMap.create();
 
     public boolean add(NonTerminal newNT) {
-        if (startNonTerminals.containsKey(newNT.name)) {
-            return false;
-        } else {
-            startNonTerminals.put(newNT.name, newNT);
-            return true;
+        try {
+          startNonTerminals.put(newNT.name, newNT);
+          return true;
+        }
+        catch ( IllegalArgumentException e ) {
+          // newNT is already in the map
+          return false;
         }
     }
 

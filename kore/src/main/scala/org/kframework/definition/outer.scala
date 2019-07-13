@@ -460,7 +460,7 @@ case class Production(klabel: Option[KLabel], sort: Sort, items: Seq[ProductionI
     case _ => false
   }
 
-  override lazy val hashCode: Int = ((sort.hashCode() * 31 + items.hashCode()) * 31 + klabel.hashCode()) * 31 + att.getOption("poly").hashCode()
+  override lazy val hashCode: Int = ((sort.hashCode * 31 + items.hashCode()) * 31 + klabel.hashCode()) * 31 + att.getOption("poly").hashCode()
 
   lazy val isSyntacticSubsort: Boolean =
     items.size == 1 && items.head.isInstanceOf[NonTerminal]

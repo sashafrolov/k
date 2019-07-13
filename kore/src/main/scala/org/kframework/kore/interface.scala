@@ -87,7 +87,7 @@ trait KToken extends KItem {
     case other: KToken => sort == other.sort && s == other.s
     case _ => false
   }
-  def computeHashCode = sort.hashCode() * 13 + s.hashCode
+  def computeHashCode = sort.hashCode * 13 + s.hashCode
 }
 
 trait Sort extends Ordered[Sort] {
@@ -97,7 +97,7 @@ trait Sort extends Ordered[Sort] {
     case other: Sort => name == other.name && params == other.params
     case _ => false
   }
-  override def hashCode = name.hashCode * 23 + params.hashCode
+  override lazy val hashCode = name.hashCode * 23 + params.hashCode
     
   def compare(that: Sort): Int = {
     import scala.math.Ordering.Implicits._
