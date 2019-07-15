@@ -32,20 +32,22 @@ object ADT {
     def asIterable = klist.asIterable
   }
 
-  class KSequence private(val elements: List[K], val att: Att = Att.empty) extends kore.KSequence {
-    val items: java.util.List[K] = elements.asJava
-    val size: Int = elements.size
-    val asIterable: java.lang.Iterable[K] = new org.kframework.List(elements)
+  class KSequence extends kore.KSequence {
+    // From trait K.
+    override val att : Att
+
+    def this(elements : scala.collection.IterableOnce[K], att : Att) {
+      this addAll elements
+      this.att = att
+    }
+
+    def this(elements : scala.collection.IterableOnce[K]) {
+      this(elements, Att.empty)
+    }
+
     lazy val kApply: kore.KApply = items.asScala reduceRightOption { (a, b) => KLabels.KSEQ.apply(a, b) } getOrElse { KLabels.DOTK.apply() } match {
       case k: kore.KApply => k
       case x => KLabels.KSEQ(x, KLabels.DOTK())
-    }
-
-    def iterator: Iterator[K] = elements.iterator
-
-    override def equals(that: Any) = that match {
-      case s: KSequence => s.elements == elements
-      case _ => false
     }
   }
 

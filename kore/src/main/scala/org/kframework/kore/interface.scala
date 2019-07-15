@@ -37,7 +37,7 @@ object K {
         case (c: KApply, d: KApply) =>
           Ordering.Tuple2(KLabelOrdering, seqDerivedOrdering[Seq, K](this)).compare((c.klabel, c.klist.items.asScala), (d.klabel, d.klist.items.asScala))
         case (c: KSequence, d: KSequence) =>
-          seqDerivedOrdering(this).compare(c.items.asScala, d.items.asScala)
+          seqDerivedOrdering(this).compare(c, d)
         case (c: KVariable, d: KVariable) =>
           Ordering[String].compare(c.name, d.name)
         case (c: KAs, d: KAs) =>
@@ -147,7 +147,9 @@ trait KApply extends KItem with KCollection {
   override def computeHashCode = klabel.hashCode * 17 + klist.hashCode
 }
 
-trait KSequence extends KCollection with K
+trait KSequence extends K with scala.collection.mutable.ArrayBuffer[K] {
+  // KSequence inherits equals and hashCode from ArrayBuffer, not K.
+}
 
 trait KVariable extends KItem with KLabel {
   def computeHashCode = name.hashCode
