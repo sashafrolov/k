@@ -72,7 +72,7 @@ trait KLabel {
   def name: String
   def params: Seq[Sort]
   override def equals(other: Any) = other match {
-    case l: KLabel => name == l.name && params == l.params
+    case l: KLabel => (this eq l) || name == l.name && params == l.params
     case _ => false
   }
   override def hashCode = name.hashCode * 29 + params.hashCode
