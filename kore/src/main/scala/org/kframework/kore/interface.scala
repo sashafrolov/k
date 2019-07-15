@@ -149,8 +149,6 @@ trait KApply extends KItem with KCollection {
 trait KSequence extends KCollection with K
 
 trait KVariable extends KItem with KLabel {
-  def name: String
-
   def computeHashCode = name.hashCode
 }
 
