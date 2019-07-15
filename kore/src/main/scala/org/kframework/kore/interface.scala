@@ -91,7 +91,8 @@ trait KToken extends KItem {
   def sort: Sort
   def s: String
   override def equals(other: Any) = other match {
-    case other: KToken => sort == other.sort && s == other.s
+    case other: KToken => (
+      (this eq other) || sort == other.sort && s == other.s )
     case _ => false
   }
   def computeHashCode = sort.hashCode() * 13 + s.hashCode
@@ -101,7 +102,8 @@ trait Sort extends Ordered[Sort] {
   def name: String
   def params: Seq[Sort]
   override def equals(other: Any) = other match {
-    case other: Sort => name == other.name && params == other.params
+    case other: Sort => (
+      (this eq other) || name == other.name && params == other.params )
     case _ => false
   }
   override def hashCode = name.hashCode * 23 + params.hashCode
