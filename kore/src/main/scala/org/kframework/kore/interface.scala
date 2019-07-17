@@ -33,13 +33,25 @@ object K {
     def compare(a: K, b: K): Int = {
       import scala.math.Ordering.Implicits._
       (a, b) match {
-        case (c: KToken, d: KToken) => Ordering.Tuple2(Ordering[String], Ordering[Sort]).compare((c.s, c.sort), (d.s, d.sort))
-        case (c: KApply, d: KApply) => Ordering.Tuple2(KLabelOrdering, seqDerivedOrdering[Seq, K](this)).compare((c.klabel, c.klist.items.asScala), (d.klabel, d.klist.items.asScala))
-        case (c: KSequence, d: KSequence) => seqDerivedOrdering(this).compare(c.items.asScala, d.items.asScala)
-        case (c: KVariable, d: KVariable) => Ordering[String].compare(c.name, d.name)
-        case (c: KAs, d: KAs) => Ordering.Tuple2(this, this).compare((c.pattern, c.alias), (d.pattern, d.alias))
-        case (c: KRewrite, d: KRewrite) => Ordering.Tuple2(this, this).compare((c.left, c.right), (d.left, d.right))
-        case (c: InjectedKLabel, d: InjectedKLabel) => KLabelOrdering.compare(c.klabel, d.klabel)
+        case (c: KToken, d: KToken) =>
+          Ordering.Tuple2(Ordering[String], Ordering[Sort])
+            .compare((c.s, c.sort), (d.s, d.sort))
+        case (c: KApply, d: KApply) =>
+          Ordering.Tuple2(KLabelOrdering, seqDerivedOrdering[Seq, K](this))
+            .compare((c.klabel, c.klist.items.asScala), (d.klabel, d.klist.items.asScala))
+        case (c: KSequence, d: KSequence) =>
+          seqDerivedOrdering(this)
+            .compare(c.items.asScala, d.items.asScala)
+        case (c: KVariable, d: KVariable) =>
+          Ordering[String].compare(c.name, d.name)
+        case (c: KAs, d: KAs) =>
+          Ordering.Tuple2(this, this)
+            .compare( (c.pattern, c.alias), (d.pattern, d.alias) )
+        case (c: KRewrite, d: KRewrite) =>
+          Ordering.Tuple2(this, this)
+            .compare( (c.left, c.right), (d.left, d.right) )
+        case (c: InjectedKLabel, d: InjectedKLabel) =>
+          KLabelOrdering.compare(c.klabel, d.klabel)
         case (_:KToken, _) => 1
         case (_, _:KToken) => -1
         case (_:KApply, _) => 1
