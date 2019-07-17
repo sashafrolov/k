@@ -4,8 +4,8 @@ import org.kframework.{CombinerFromBuilder, Collector, attributes}
 import org.kframework.attributes.Att
 
 import scala.collection.mutable.ListBuffer
-import collection.JavaConverters._
-import collection._
+import scala.collection.JavaConverters._
+import scala.collection._
 
 /**
  *
@@ -31,7 +31,7 @@ object KORE extends Constructors with ScalaSugared {
 
   def KToken(string: String, sort: Sort): KToken = KToken(string, sort, Att)
 
-  def KSequence(ks: java.util.List[K]): KSequence = KSequence(ks, Att)
+  def KSequence(ks: IterableOnce[K]): KSequence = KSequence(ks, Att)
 
   def KRewrite(left: K, right: K): KRewrite = KRewrite(left, right, Att)
 
