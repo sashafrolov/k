@@ -2,6 +2,26 @@ ARG BASE_IMAGE=ubuntu:bionic
 FROM ${BASE_IMAGE}
 ARG BASE_IMAGE=ubuntu:bionic
 
+# Environment.
+ENV TZ="America/Chicago" \
+    LOCALE="en_US.UTF-8"
+
+# Timezone.
+RUN ln --symbolic --no-dereference --force /usr/share/zoneinfo/${TZ} /etc/localtime \
+    && echo "${TZ}" > /etc/timezone
+
+# Locale.
+RUN apt-get update -qq \
+    && apt-get install --yes locales \
+    && locale-gen --no-purge "${LOCALE}"
+
+ENV LANG="${LOCALE}" \
+    LC_ALL="${LOCALE}" \
+    LANGUAGE="en_US:en"
+
+RUN update-locale
+
+# Add apt repositories.
 RUN if [ "${BASE_IMAGE}" = "debian:stretch" ]; then \
       echo "deb http://ftp.debian.org/debian stretch-backports main" \
         > /etc/apt/sources.list.d/stretch-backports.list; \
@@ -51,8 +71,6 @@ ADD k-distribution/src/main/scripts/lib/opam  \
     /home/user/.tmp-opam/lib/opam/
 RUN cd /home/user \
     && ./.tmp-opam/bin/k-configure-opam-dev
-
-ENV LC_ALL=C.UTF-8
 
 ADD --chown=user:user \
     haskell-backend/src/main/native/haskell-backend/stack.yaml \
