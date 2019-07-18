@@ -7,6 +7,8 @@ import org.kframework.unparser.ToKast
 
 import scala.collection.JavaConverters._
 
+import org.kframework.utils.errorsystem.KEMException
+
 /**
  * This file contains all inner KORE interfaces.
  * The the wiki for documentation:
@@ -65,6 +67,8 @@ object K {
         case (_, _:KRewrite) => -1
         case (_:InjectedKLabel, _) => 1
         case (_, _:InjectedKLabel) => -1
+        case (x: Any, y: Any) =>
+          throw KEMException.criticalError(s"Unexpected comparison of $x and $y")
       }
     }
   }
