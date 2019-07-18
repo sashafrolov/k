@@ -91,7 +91,8 @@ trait KLabel {
 object KLabelOrdering extends Ordering[KLabel] {
   def compare(a: KLabel, b: KLabel): Int = {
     import scala.math.Ordering.Implicits._
-    Ordering.Tuple2(Ordering[String], seqDerivedOrdering[Seq, Sort](Ordering[Sort])).compare((a.name, a.params), (b.name, b.params))
+    Ordering.Tuple2( Ordering[String], seqDerivedOrdering[Seq, Sort](Ordering[Sort]) )
+      .compare( (a.name, a.params), (b.name, b.params) )
   }
 }
 
@@ -116,7 +117,8 @@ trait Sort extends Ordered[Sort] {
     
   def compare(that: Sort): Int = {
     import scala.math.Ordering.Implicits._
-    Ordering.Tuple2(Ordering[String], seqDerivedOrdering[Seq, Sort](Ordering.ordered(identity))).compare((this.name, this.params), (this.name, this.params))
+    Ordering.Tuple2( Ordering[String], seqDerivedOrdering[Seq, Sort](Ordering.ordered(identity)) )
+      .compare( (this.name, this.params), (this.name, this.params) )
   }
 }
 
