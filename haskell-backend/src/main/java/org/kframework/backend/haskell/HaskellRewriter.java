@@ -96,7 +96,7 @@ public class HaskellRewriter implements Function<Definition, Rewriter> {
     @Override
     public Rewriter apply(Definition definition) {
         Module module = definition.mainModule();
-        if (!module.equals(def.executionModule()) && kProveOptions.specModule != null) {
+        if (!module.name().equals(def.executionModule().name()) && kProveOptions.specModule != null) {
             throw KEMException.criticalError("Invalid module specified for rewriting. Haskell backend only supports rewriting over" +
                     " the definition's main module.");
         }
