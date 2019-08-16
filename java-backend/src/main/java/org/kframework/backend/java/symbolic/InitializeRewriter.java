@@ -227,7 +227,7 @@ public class InitializeRewriter implements Function<org.kframework.definition.De
             SymbolicRewriter rewriter = new SymbolicRewriter(rewritingContext, transitions, converter);
 
             rewritingContext.setExecutionPhase(true);
-            List<ConstrainedTerm> proofResults = proofObligationRules.stream()
+            List<List<ConstrainedTerm>> proofResults = proofObligationRules.stream()
                     .filter(r -> !r.att().contains(Attribute.TRUSTED_KEY))
                     .map(r -> {
                         //Build LHS with fully evaluated constraint. Then expand patterns.
@@ -247,20 +247,34 @@ public class InitializeRewriter implements Function<org.kframework.definition.De
                         if (rewritingContext.javaExecutionOptions.cacheFunctionsOptimized) {
                             rewritingContext.functionCache.clear();
                         }
+
                         rewritingContext.stateLog.log(StateLog.LogEvent.REACHINIT,   lhs.term(), lhs.constraint());
                         rewritingContext.stateLog.log(StateLog.LogEvent.REACHTARGET, rhs.term(), rhs.constraint());
-                        return rewriter.proveRule(r, lhs, rhs, kem, javaBoundaryPattern);
+                        List<ConstrainedTerm> claimResults = rewriter.proveRule(r, lhs, rhs, kem, javaBoundaryPattern);
+                        for (ConstrainedTerm res: claimResults) {
+                            rewritingContext.stateLog.log(StateLog.LogEvent.REACHUNPROVED, res.term(), res.constraint());
+                        }
+                        return claimResults;
                     })
-                    .flatMap(List::stream)
                     .collect(Collectors.toList());
 
-            for (ConstrainedTerm res: proofResults) {
-                rewritingContext.stateLog.log(StateLog.LogEvent.REACHUNPROVED, res.term(), res.constraint());
+            K result = KORE.KApply(KLabels.ML_TRUE);
+            if (proofResults.size() > 0) {
+                if (proofResults.size() > 1) {
+                    System.err.println("Multiple unproved claims, only returning first.");
+                }
+                // TODO: { constraint #Equals true }
+                List<ConstrainedTerm> singleResult = proofResults.get(0);
+                K term       = singleResult.get(0).term();
+                K constraint = singleResult.get(0).constraint();
+                result = KORE.KApply(KLabels.ML_AND, term, constraint);
+                for (int i = 1; i < singleResult.size(); i++) {
+                    term       = singleResult.get(i).term();
+                    constraint = singleResult.get(i).constraint();
+                    result = KORE.KApply(KLabels.ML_OR, result, KORE.KApply(KLabels.ML_AND, term, constraint));
+                }
             }
 
-            K result = proofResults.stream()
-                    .map(constrainedTerm -> (K) constrainedTerm.term())
-                    .reduce(((k1, k2) -> KORE.KApply(KLabels.ML_AND, k1, k2))).orElse(KORE.KApply(KLabels.ML_TRUE));
             int exit;
             if (result instanceof KApply) {
                 KApply kapp = (KApply) result;
