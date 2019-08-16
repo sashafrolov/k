@@ -258,13 +258,19 @@ public class InitializeRewriter implements Function<org.kframework.definition.De
                     })
                     .collect(Collectors.toList());
 
+            List<List<ConstrainedTerm>> nonEmptyResults = new ArrayList();
+            for (List<ConstrainedTerm> res: proofResults) {
+                if (res.size() > 0) {
+                    nonEmptyResults.add(res);
+                }
+            }
             K result = KORE.KApply(KLabels.ML_TRUE);
-            if (proofResults.size() > 0) {
-                if (proofResults.size() > 1) {
+            if (nonEmptyResults.size() > 0) {
+                if (nonEmptyResults.size() > 1) {
                     System.err.println("Multiple unproved claims, only returning first.");
                 }
                 // TODO: { constraint #Equals true }
-                List<ConstrainedTerm> singleResult = proofResults.get(0);
+                List<ConstrainedTerm> singleResult = nonEmptyResults.get(0);
                 K term       = singleResult.get(0).term();
                 K constraint = singleResult.get(0).constraint();
                 result = KORE.KApply(KLabels.ML_AND, term, constraint);
