@@ -20,6 +20,7 @@ import org.kframework.backend.java.util.Profiler2;
 import org.kframework.backend.java.util.RuleSourceUtil;
 import org.kframework.backend.java.util.StateLog;
 import org.kframework.builtin.KLabels;
+import org.kframework.builtin.Sorts;
 import org.kframework.compile.ExpandMacros;
 import org.kframework.compile.ResolveSemanticCasts;
 import org.kframework.definition.Module;
@@ -260,7 +261,7 @@ public class InitializeRewriter implements Function<org.kframework.definition.De
 
             K result = proofResults.stream()
                     .map(constrainedTerm -> (K) constrainedTerm.term())
-                    .reduce(((k1, k2) -> KORE.KApply(KLabels.ML_AND, k1, k2))).orElse(KORE.KApply(KLabels.ML_TRUE));
+                    .reduce(((k1, k2) -> KORE.KApply(KLabel(KLabels.ML_AND.name(), Sorts.Bool()), k1, k2))).orElse(KORE.KApply(KLabel(KLabels.ML_TRUE.name(), Sorts.Bool())));
             int exit;
             if (result instanceof KApply) {
                 KApply kapp = (KApply) result;

@@ -32,6 +32,7 @@ import org.kframework.backend.java.util.StateLog;
 import org.kframework.backend.java.util.TimeMemoryEntry;
 import org.kframework.builtin.KLabels;
 import org.kframework.builtin.Rules;
+import org.kframework.builtin.Sorts;
 import org.kframework.kore.FindK;
 import org.kframework.kore.K;
 import org.kframework.kore.KApply;
@@ -55,6 +56,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static org.kframework.kore.KORE.*;
 
 /**
  * @author AndreiS
@@ -624,7 +627,7 @@ public class SymbolicRewriter {
     private K disjunctResults(List<K> results) {
         return results.stream().map(x -> x instanceof ConjunctiveFormula ? processConjuncts((ConjunctiveFormula) x) : x)
                 .distinct()
-                .reduce((x, y) -> KORE.KApply(KLabels.ML_OR, x, y)).orElse(KORE.KApply(KLabels.ML_FALSE));
+                .reduce((x, y) -> KORE.KApply(KLabel(KLabels.ML_OR.name(), Sorts.Bool()), x, y)).orElse(KORE.KApply(KLabels.ML_FALSE));
     }
 
     public List<ConstrainedTerm> proveRule(
