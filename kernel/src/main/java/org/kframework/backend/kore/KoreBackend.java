@@ -179,6 +179,7 @@ public class KoreBackend implements Backend {
         ConfigurationInfoFromModule configInfo = new ConfigurationInfoFromModule(mod);
         LabelInfo labelInfo = new LabelInfoFromModule(mod);
         SortInfo sortInfo = SortInfo.fromModule(mod);
+        ModuleTransformer resolveFun = ModuleTransformer.from(new ResolveFun(true)::resolve, "resolving #fun");
         ModuleTransformer resolveAnonVars = ModuleTransformer.fromSentenceTransformer(
                 new ResolveAnonVar()::resolve,
                 "resolving \"_\" vars");
@@ -198,7 +199,8 @@ public class KoreBackend implements Backend {
                 new ConcretizeCells(configInfo, labelInfo, sortInfo, mod)::concretize,
                 "concretizing configuration");
 
-        return m -> resolveAnonVars
+        return m -> resolveFun
+                .andThen(resolveAnonVars)
                 .andThen(resolveSemanticCasts)
                 .andThen(expandMacros)
                 .andThen(addImplicitComputationCell)
