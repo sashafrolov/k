@@ -226,7 +226,7 @@ module SET
 endmodule
 
 module LIST
-  imports INT-SYNTAX
+  imports INT
   imports BASIC-K
 
   syntax List [hook(LIST.List)]
@@ -290,6 +290,9 @@ module LIST
 
   /*@ Get the list length */
   syntax Int ::= size(List)               [function, functional, hook(LIST.size), klabel (sizeList), smtlib(smt_seq_len)]
+
+  rule size(.List) => 0
+  rule size(ListItem(_) L) => 1 +Int size(L)
 endmodule
 
 module COLLECTIONS
