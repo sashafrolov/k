@@ -204,7 +204,7 @@ public class ResolveStrict {
             } else {
                 requires = sideCondition.get();
             }
-            Rule hybrid = Rule(KRewrite(KApply(KLabel("isKResult"), term), BooleanUtils.TRUE), requires, BooleanUtils.TRUE);
+            Rule hybrid = Rule(KRewrite(KApply(KLabel("isKResult"), term), requires), BooleanUtils.TRUE, BooleanUtils.TRUE);
             sentences.add(hybrid);
         }
         return sentences;
