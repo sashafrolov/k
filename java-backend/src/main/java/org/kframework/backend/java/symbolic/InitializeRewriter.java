@@ -402,7 +402,7 @@ public class InitializeRewriter implements Function<org.kframework.definition.De
                 ConjunctiveFormula constraint = constraintHolder.constraint();
                 termContext.setTopConstraint(constraint);
                 //simplify the constraint in its own context, to force full evaluation of terms.
-                constraint = constraint.simplify(termContext);
+                constraint = constraint.simplify(termContext, true);
                 return constraint;
             }
 

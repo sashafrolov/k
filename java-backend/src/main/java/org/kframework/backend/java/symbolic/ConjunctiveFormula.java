@@ -398,6 +398,10 @@ public class ConjunctiveFormula extends Term implements CollectionInternalRepres
         return simplify(false, true, context, Collections.emptySet(), false, false);
     }
 
+    public ConjunctiveFormula simplify(TermContext context, boolean logFormulaFalsify) {
+        return simplify(false, true, context, Collections.emptySet(), false, logFormulaFalsify);
+    }
+
     /**
      * Similar to {@link ConjunctiveFormula#simplify(TermContext)} except that equalities
      * between builtin data structures will remain intact if they cannot be
