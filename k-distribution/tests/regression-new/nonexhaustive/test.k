@@ -110,4 +110,16 @@ rule foo12(_2) => 0
 
 syntax Int ::= foo13(StringBuffer) [function, functional]
 
+syntax A ::= B | C
+syntax B ::= "b"
+syntax C ::= D | E
+syntax D ::= "d"
+syntax E ::= "e"
+
+syntax Int ::= applyA ( A ) [function, functional]
+
+rule applyA(_:B) => 0
+rule applyA(_:D) => 1
+rule applyA(_:E) => 2
+
 endmodule
