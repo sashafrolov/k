@@ -15,6 +15,10 @@ pipeline {
       steps { script { currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}" } }
     }
     stage('Create source tarball') {
+      when {
+        branch 'master'
+        beforeAgent true
+      }
       agent {
         dockerfile {
           additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
@@ -124,6 +128,10 @@ pipeline {
                   }
                 }
                 stage('Test Debian Package') {
+      when {
+        branch 'master'
+        beforeAgent true
+      }
                   agent {
                     docker {
                       image 'ubuntu:bionic'
@@ -146,10 +154,6 @@ pipeline {
               }
             }
             stage('DockerHub') {
-              when {
-                branch 'master'
-                beforeAgent true
-              }
               environment {
                 DOCKERHUB_TOKEN   = credentials('rvdockerhub')
                 BIONIC_COMMIT_TAG = "ubuntu-bionic-${env.SHORT_REV}"
