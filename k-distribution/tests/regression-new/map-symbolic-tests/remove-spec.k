@@ -1,0 +1,35 @@
+// Copyright (c) 2020 K Team. All Rights Reserved.
+
+requires "map-tests.k"
+
+module REMOVE-SPEC
+
+    imports MAP-TESTS
+
+    rule <k> remove ( (MAP:Map X:MyId |-> 1) [Y:MyId <- undef] [ Z:MyId ] ) =>   removeResult ( MAP [ Z ] )  </k> requires Y ==K X
+
+    rule <k> remove ( (MAP:Map X:MyId |-> 1) [Y:MyId <- undef] [ Z:MyId ] ) =>   removeResult ( MAP [ Z ] )  </k> requires Y ==K X andBool Z  ==K Y andBool Z  ==K X
+
+    rule <k> remove ( (MAP:Map X:MyId |-> 1) [Y:MyId <- undef] [ Z:MyId ] ) =>   removeResult ( MAP [ Z ] )  </k> requires Y ==K X andBool Z =/=K Y andBool Z =/=K X
+
+    rule <k> remove ( (MAP:Map X:MyId |-> 1) [Y:MyId <- undef] [ Z:MyId ] ) =>   removeResult ( ( MAP  X |-> 1 ) [ Y <- undef ] [ Z ] )  </k>
+
+    rule <k> remove ( (MAP:Map X:MyId |-> 1) [Y:MyId <- undef] [ Z:MyId ] ) =>   removeResult ( ( MAP  X |-> 1 ) [ Y <- undef ] [ Z ] )  </k> requires Y =/=K X
+
+    rule <k> remove ( (MAP:Map X:MyId |-> 1) [Y:MyId <- undef] [ Z:MyId ] ) =>   removeResult ( ( MAP  X |-> 1 ) [ Y <- undef ] [ Z ] )  </k> requires Y =/=K X andBool Z =/=K X
+
+    rule <k> remove ( (MAP:Map X:MyId |-> 1) [Y:MyId <- undef] [ Z:MyId ] ) =>   removeResult ( ( MAP  X |-> 1 ) [ Y <- undef ] [ Z ] )  </k> requires Y =/=K X andBool Z =/=K Y
+
+    rule <k> remove ( (MAP:Map X:MyId |-> 1) [Y:MyId <- undef] [ Z:MyId ] ) =>   removeResult ( ( MAP  X |-> 1 ) [ Y <- undef ] [ Z ] )  </k> requires Y =/=K X andBool Z =/=K Y andBool Z =/=K X
+
+    rule <k> remove ( (MAP:Map X:MyId |-> 1) [Y:MyId <- undef] [ Z:MyId ] ) =>   removeResult ( ( MAP  Z |-> 1 ) [ Y <- undef ] [ Z ] )  </k> requires Z  ==K X
+
+    rule <k> remove ( (MAP:Map X:MyId |-> 1) [Y:MyId <- undef] [ Z:MyId ] ) =>   removeResult ( ( MAP  X |-> 1 ) [ Y <- undef ] [ Z ] )  </k> requires Z =/=K X
+
+    rule <k> remove ( (MAP:Map X:MyId |-> 1) [Y:MyId <- undef] [ Z:MyId ] ) =>   removeResult ( ( MAP  X |-> 1 ) [ Y <- undef ] [ Z ] )  </k> requires Z =/=K Y
+
+    rule <k> remove ( (MAP:Map X:MyId |-> 1) [Y:MyId <- undef] [ Z:MyId ] ) =>   removeResult ( ( MAP  X |-> 1 ) [ Y <- undef ] [ Z ] )  </k> requires Z =/=K Y andBool Z =/=K X
+
+    rule <k> remove ( (X:MyId |-> 3 y |-> 4) [ x <- undef ] [ X ] ) =>   removeResult ( 3 )  </k> requires X =/=K x
+
+endmodule

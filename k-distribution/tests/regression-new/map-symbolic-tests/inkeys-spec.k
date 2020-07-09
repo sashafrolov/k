@@ -1,0 +1,40 @@
+// Copyright (c) 2020 K Team. All Rights Reserved.
+
+requires "map-tests.k"
+
+module INKEYS-SPEC
+    imports MAP-TESTS
+
+    rule <k> inkeys ( X:MyId in_keys ( .Map  ) ) =>   inkeysResult ( false )  </k>
+
+    rule <k> inkeys ( X:MyId in_keys ( M:Map X      |-> 0 ) ) =>   inkeysResult ( true )  </k>
+
+    rule <k> inkeys ( Y:MyId in_keys ( M:Map X:MyId |-> 0 ) ) =>   inkeysResult ( Y in_keys ( M  ( X |-> 0 ) ) )  </k>
+
+    rule <k> inkeys ( Y:MyId in_keys ( M:Map X:MyId |-> 0 ) ) =>   inkeysResult ( true )  </k> requires Y in_keys(M)
+
+    rule <k> inkeys ( Y:MyId in_keys ( M:Map X:MyId |-> 0 ) ) =>   inkeysResult ( Y in_keys ( M  ( X |-> 0 ) ) )  </k> requires notBool Y in_keys(M)
+
+    rule <k> inkeys ( X:MyId in_keys ( Z:MyId |-> 1 M:Map X      |-> 0 ) ) =>   inkeysResult ( true )  </k>
+
+    rule <k> inkeys ( Y:MyId in_keys ( Z:MyId |-> 1 M:Map X:MyId |-> 0 ) ) =>   inkeysResult ( Y in_keys ( M  X |-> 0  ( Z |-> 1 ) ) )  </k>
+
+    rule <k> inkeys ( Y:MyId in_keys ( Z:MyId |-> 1 M:Map X:MyId |-> 0 ) ) =>   inkeysResult ( true )  </k> requires Y in_keys(M)
+
+    rule <k> inkeys ( X:MyId in_keys ( M:Map [ X      <- 0 ] ) ) =>   inkeysResult ( true )  </k>
+
+    rule <k> inkeys ( Y:MyId in_keys ( M:Map [ X:MyId <- 0 ] ) ) =>   inkeysResult ( Y in_keys ( M [ X <- 0 ] ) )  </k>
+
+    rule <k> inkeys ( Y:MyId in_keys ( M:Map [ X:MyId <- 0 ] ) ) =>   inkeysResult ( true )  </k> requires Y in_keys(M)
+
+    rule <k> inkeys ( Y:MyId in_keys ( M:Map [ X:MyId <- 0 ] ) ) =>   inkeysResult ( Y in_keys ( M [ X <- 0 ] ) )  </k> requires notBool Y in_keys(M)
+
+    rule <k> inkeys ( X:MyId in_keys ( M:Map [ Z:MyId <- 1 ] [ X      <- 0 ] ) ) =>   inkeysResult ( true )  </k>
+
+    rule <k> inkeys ( Y:MyId in_keys ( M:Map [ Z:MyId <- 1 ] [ X:MyId <- 0 ] ) ) =>   inkeysResult ( Y in_keys ( M [ Z <- 1 ] [ X <- 0 ] ) )  </k>
+
+    rule <k> inkeys ( Y:MyId in_keys ( M:Map [ Z:MyId <- 1 ] [ X:MyId <- 0 ] ) ) =>   inkeysResult ( true )  </k> requires Y in_keys(M)
+
+    rule <k> inkeys ( Y:MyId in_keys ( M:Map [ Z:MyId <- 1 ] [ X:MyId <- 0 ] ) ) =>   inkeysResult ( Y in_keys ( M [ Z <- 1 ] [ X <- 0 ] ) )  </k> requires notBool Y in_keys(M)
+
+endmodule
