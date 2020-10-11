@@ -1,6 +1,4 @@
 module VERIF
-    configuration <k> $PGM:Pgm </k> <counter> 1 </counter> <sum> 0 </sum>
-
     syntax KItem ::= init1(    Int )
                    | init2(    Int )
                    | state1(   Int )
