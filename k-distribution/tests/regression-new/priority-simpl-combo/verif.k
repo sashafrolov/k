@@ -39,7 +39,7 @@ module VERIF
     rule <k> #precompiled?(ACCTCODE) => .                                ... </k>
       requires notBool #inPrecompiledAccounts(ACCTCODE)                            [priority(40)]
 
-    syntax Bool ::= #inPrecompiledAccounts ( Int )                                 [function, functional]
+    syntax Bool ::= #inPrecompiledAccounts ( Int )                                 [function]
     rule #inPrecompiledAccounts(ACCTCODE)  => ACCTCODE in #precompiledAccounts()
     rule #inPrecompiledAccounts(#newAddr(_,_)) => false                            [priority(40)]
 
