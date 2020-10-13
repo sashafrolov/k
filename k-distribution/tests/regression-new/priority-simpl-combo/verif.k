@@ -40,7 +40,7 @@ module VERIF
       requires notBool #inPrecompiledAccounts(ACCTCODE)                            [priority(40)]
 
     syntax Bool ::= #inPrecompiledAccounts ( Int )                                 [function]
-    rule #inPrecompiledAccounts(ACCTCODE)  => ACCTCODE in #precompiledAccounts()
+    rule #inPrecompiledAccounts(ACCTCODE)  => ACCTCODE in #precompiledAccounts()   [concrete]
     rule #inPrecompiledAccounts(#newAddr(_,_)) => false                            [priority(40)]
 
 endmodule
