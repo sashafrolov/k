@@ -52,7 +52,8 @@ module VERIF
 
     syntax InternalOp ::= "#next" "[" OpCode "]"
 
-    syntax Int ::= #newAddr ( Int , Int ) [function]
+    syntax Int ::= #newAddr ( Int , Int )         [function]
+    rule #newAddr(ACCT, NONCE) => ACCT +Int NONCE [concrete]
 
  // ERC20 verifier code
  // -----------------------------------------------------------
