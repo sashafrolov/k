@@ -26,6 +26,8 @@ module VERIF
       requires notBool ACCTCODE in #precompiledAccounts()
 
     syntax InternalOp ::= "#next" "[" OpCode "]"
+ // --------------------------------------------------------
+    rule <k> #next [ OP ] => OP ... </k>
 
     syntax Int ::= #newAddr ( Int , Int )         [function]
     rule #newAddr(ACCT, NONCE) => ACCT +Int NONCE [concrete]
