@@ -20,10 +20,10 @@ module VERIF
 
     syntax InternalOp ::= "#precompiled?" "(" Int ")"
  // --------------------------------------------------------------
-    rule <k> #precompiled?(ACCTCODE) => #next [ #precompiled(ACCTCODE) ] ... </k>
+    /*rule <k> #precompiled?(ACCTCODE) => #next [ #precompiled(ACCTCODE) ] ... </k>
       requires         ACCTCODE in #precompiledAccounts()
     rule <k> #precompiled?(ACCTCODE) => .                                ... </k>
-      requires notBool ACCTCODE in #precompiledAccounts()
+      requires notBool ACCTCODE in #precompiledAccounts()*/
 
     syntax InternalOp ::= "#next" "[" OpCode "]"
  // --------------------------------------------------------
