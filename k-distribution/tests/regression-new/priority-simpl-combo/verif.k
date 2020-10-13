@@ -41,6 +41,6 @@ module VERIF
 
     syntax Bool ::= #inPrecompiledAccounts ( Int )                                 [function, functional]
     rule #inPrecompiledAccounts(ACCTCODE)  => ACCTCODE in #precompiledAccounts()
-    rule #inPrecompiledAccounts(#newAddr(_,_)) => false                            [simplification]
+    rule #inPrecompiledAccounts(#newAddr(_,_)) => false                            [simplification, priority(40)]
 
 endmodule
