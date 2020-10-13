@@ -41,6 +41,11 @@ module VERIF
 
     syntax Bool ::= #inPrecompiledAccounts ( Int )                                 [function]
     rule #inPrecompiledAccounts(ACCTCODE)  => ACCTCODE in #precompiledAccounts()   [concrete]
-    rule #inPrecompiledAccounts(#newAddr(_,_)) => false                            [simplification]
 
+endmodule
+
+module VERIF-EXTRA
+    imports VERIF
+
+    rule #inPrecompiledAccounts(#newAddr(_,_)) => false                            [simplification]
 endmodule
