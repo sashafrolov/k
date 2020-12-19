@@ -55,5 +55,8 @@ jobs:
           . $HOME/.nix-profile/etc/profile.d/nix.sh
           nix-env -iA cachix -f https://cachix.org/api/v1/install
           cachix use runtimeverification
-          nix-env -f https://github.com/${{ github.repository }}/archive/${{ github.sha }}.tar.gz \
-            -i -A k -A haskell-backend -A llvm-backend
+          git clone https://github.com/${{ github.repository }}
+          cd $(basename ${{ github.repository }})
+          git checkout ${{ github.head_ref }}
+          git submodule update --init --recursive
+          nix-env -f . -i -A k -A haskell-backend -A llvm-backend
